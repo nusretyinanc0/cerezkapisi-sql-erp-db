@@ -38,18 +38,10 @@ cerezkapisi-sql-proje/
 └── package.json
 ```
 
----
-
-## 🚀 Canlı Web Panelini Çalıştırma
-
-Sorguları tarayıcı üzerinden canlı çalıştırmak, barkodlu ürün/toptancı eklemek ve fatura kesmek için:
-
-```bash
-npm start
 ```
 
 Sunucu başladığında **`http://localhost:3050`** adresinden yönetim paneline erişebilirsiniz.
 
 ---
-**Hazırlayan:** Nusret Yınanç
+**Hazırlayan:** Nusret Yinanç
 
