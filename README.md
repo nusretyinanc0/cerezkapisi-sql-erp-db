@@ -42,6 +42,6 @@ cerezkapisi-sql-proje/
 
 Sunucu başladığında **`http://localhost:3050`** adresinden yönetim paneline erişebilirsiniz.
 
----
+
 **Hazırlayan:** Nusret Yinanç
 
