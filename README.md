@@ -8,15 +8,7 @@
 
 ---
 
-## 📦 Teslim Dosyaları
 
-| Dosya | Açıklama |
-| :--- | :--- |
-| 📄 **[`NusretYinanc_CerezKapisi_Proje.sql`](./NusretYinanc_CerezKapisi_Proje.sql)** | Tablo oluşturma (DDL), veri girişi (DML), analiz sorguları (DQL), View ve Backup komutlarını içeren tek parça SQL dosyası. |
-| 📘 **[`NusretYinanc_CerezKapisi_Proje.docx`](./NusretYinanc_CerezKapisi_Proje.docx)** | SQL kod kutularını, sorgu sonucu ekran görüntülerini ve teknik açıklamaları içeren proje raporu. |
-| 🖼️ **[`NusretYinanc_CerezKapisi_Proje.png`](./NusretYinanc_CerezKapisi_Proje.png)** | Tablolar arasındaki Primary Key (PK) ve Foreign Key (FK) ilişkilerini gösteren ER diyagramı. |
-
----
 
 ## 📐 Veri Tabanı Mimarisi (`CerezKapisiDB`)
 
