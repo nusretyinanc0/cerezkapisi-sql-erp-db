@@ -1,0 +1,12 @@
+{
+  "name": "cerezkapisi-sql-erp-proje",
+  "version": "1.0.0",
+  "description": "ÇerezKapısı - Barkodlu Kuruyemiş Satış, Stok, Toptancı ve SQL Veri Yönetim Sistemi (CerezKapisiDB)",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
+  },
+  "author": "Nusret Yınanç",
+  "license": "ISC"
+}

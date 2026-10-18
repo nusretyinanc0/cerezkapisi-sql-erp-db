@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ÇerezKapısı — SQL Veri Yönetim & Barkodlu ERP Sistemi (CerezKapisiDB)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --blue: #3b82f6;
+      --green: #10b981;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-bottom: 1px solid var(--card-border);
+      padding: 18px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+    .brand h1 { font-size: 20px; font-weight: 700; }
+    .brand p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .badge-dba {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 32px;
+    }
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .kpi-label { font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-val { font-size: 26px; font-weight: 700; margin-top: 6px; }
+    .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* Navigation Tabs */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 14px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: var(--card);
+      color: var(--muted);
+      border: 1px solid var(--card-border);
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: var(--text); border-color: #64748b; }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #0f172a;
+      border-color: var(--primary);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Report Selector Buttons */
+    .report-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .rep-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 12px 16px;
+      border-radius: 10px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    .rep-btn span {
+      display: block;
+      font-size: 11.5px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 4px;
+    }
+    .rep-btn:hover, .rep-btn.active {
+      border-color: var(--primary);
+      background: rgba(245, 158, 11, 0.12);
+    }
+
+    /* SQL Box & Table */
+    .panel-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    pre.sql-box {
+      background: #090d16;
+      border-left: 4px solid var(--blue);
+      padding: 14px 18px;
+      border-radius: 8px;
+      color: #93c5fd;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    th, td {
+      padding: 11px 14px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    th {
+      background: #0f172a;
+      color: #cbd5e1;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    tr:hover td { background: rgba(255, 255, 255, 0.03); }
+
+    .badge {
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .badge-crit { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); }
+    .badge-ok { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.4); }
+    .mono { font-family: Consolas, monospace; color: #fde68a; }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    input, select {
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #fff;
+      font-size: 13.5px;
+    }
+    button.btn-primary {
+      background: var(--primary);
+      color: #0f172a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13.5px;
+    }
+    button.btn-primary:hover { background: var(--primary-hover); }
+    .toast {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: none;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🥜</div>
+      <div>
+        <h1>ÇerezKapısı — Barkodlu Kuruyemiş Satış, Stok & Toptancı Veri Yönetim Sistemi</h1>
+        <p>Veri Tabanı: <strong>CerezKapisiDB</strong> | DBA & Geliştirici: <strong>Nusret Yınanç</strong></p>
+      </div>
+    </div>
+    <div class="badge-dba">SQL Server (T-SQL) & İlişkisel DB Mimarisi</div>
+  </header>
+
+  <div class="container">
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Toplam Satış Cirosu</div>
+        <div class="kpi-val" id="kpiRevenue" style="color: var(--green);">0.00 TL</div>
+        <div class="kpi-sub">Faturalı Sipariş Toplamı (SUM)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Net İşletme Kârı</div>
+        <div class="kpi-val" id="kpiProfit" style="color: var(--primary);">0.00 TL</div>
+        <div class="kpi-sub">(Satış Fiyatı - Toptancı Alış) × Adet</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Barkodlu Ürün Çeşidi</div>
+        <div class="kpi-val" id="kpiProducts">0</div>
+        <div class="kpi-sub">EAN-13 Barkodlu Stok Kartı</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Kritik Stok (&lt; 20)</div>
+        <div class="kpi-val" id="kpiCrit" style="color: var(--red);">0</div>
+        <div class="kpi-sub">Acil Toptancı Siparişi Gereken</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Kayıtlı Toptancı</div>
+        <div class="kpi-val" id="kpiSuppliers" style="color: #38bdf8;">0</div>
+        <div class="kpi-sub">Vergi Numaralı Tedarikçi Firma</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Kesilen Satış Faturası</div>
+        <div class="kpi-val" id="kpiOrders" style="color: #c084fc;">0</div>
+        <div class="kpi-sub">Orders &amp; OrderDetails Kaydı</div>
+      </div>
+    </div>
+
+    <div id="toastBox" class="toast"></div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('reports', this)">📊 Bölüm 3 &amp; 4: Canlı SQL Rapor Merkezi</button>
+      <button class="tab-btn" onclick="switchTab('products', this)">🏷️ Barkodlu Ürünler &amp; Stok (Products)</button>
+      <button class="tab-btn" onclick="switchTab('suppliers', this)">🚛 Toptancılar &amp; Vergi No (Suppliers)</button>
+      <button class="tab-btn" onclick="switchTab('pos', this)">🧾 Yeni Satış Faturası Kes (Orders &amp; Details)</button>
+      <button class="tab-btn" onclick="switchTab('schema', this)">📐 ER Diyagramı &amp; Yedekleme (Backup)</button>
+    </div>
+
+    <!-- TAB 1: SQL RAPOR MERKEZİ -->
+    <div id="tab-reports" class="tab-panel active">
+      <div class="report-buttons">
+        <button class="rep-btn active" onclick="loadReport('1', this)">
+          1. Temel Listeleme (Kritik Stok &lt; 20)
+          <span>SELECT, WHERE Stock &lt; 20, ORDER BY Stock DESC</span>
+        </button>
+        <button class="rep-btn" onclick="loadReport('2', this)">
+          2. Veri Birleştirme (Müşteri Siparişleri)
+          <span>INNER JOIN (Customers &amp; Orders)</span>
+        </button>
+        <button class="rep-btn" onclick="loadReport('3', this)">
+          3. Çoklu Birleştirme ("Ahmet Yılmaz" Raporu)
+          <span>5 Tablo Zincirleme JOIN (Customers..Categories)</span>
+        </button>
+        <button class="rep-btn" onclick="loadReport('4', this)">
+          4. Gruplama &amp; Aggregate (Kategori Ürün Sayısı)
+          <span>LEFT JOIN, GROUP BY, COUNT(), SUM()</span>
+        </button>
+        <button class="rep-btn" onclick="loadReport('5', this)">
+          5. Ciro Analizi (Müşteri Bazlı Harcama)
+          <span>SUM(TotalAmount), GROUP BY, ORDER BY DESC</span>
+        </button>
+        <button class="rep-btn" onclick="loadReport('6', this)">
+          6. Zaman Analizi (Sipariş Yaşı)
+          <span>DATEDIFF(DAY, OrderDate, GETDATE())</span>
+        </button>
+        <button class="rep-btn" onclick="loadReport('7', this)">
+          7. Toptancı Vergi No, Barkod &amp; Net Kâr Analizi
+          <span>Gerçek İşletme Raporu: Alış vs Satış Kârlılığı</span>
+        </button>
+        <button class="rep-btn" onclick="loadReport('view', this)">
+          8. Bölüm 4: vw_SiparisOzet (CREATE VIEW)
+          <span>Sanal Tablo Görünümü üzerinden hızlı sorgulama</span>
+        </button>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">
+          <span id="repTitle">Sorgu Yükleniyor...</span>
+          <span id="repCount" class="badge badge-ok">0 Kayıt</span>
+        </div>
+        <pre class="sql-box" id="repSql"></pre>
+        <div class="table-wrap" id="repTableWrap"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: BARKODLU ÜRÜNLER -->
+    <div id="tab-products" class="tab-panel">
+      <div class="panel-card">
+        <div class="panel-title">Yeni Barkodlu Ürün Kartı Ekle (INSERT INTO Products)</div>
+        <form onsubmit="handleAddProduct(event)">
+          <div class="form-grid">
+            <div>
+              <label>EAN-13 Barkod No (Unique)</label>
+              <input type="text" id="pBarcode" placeholder="8690504000134" maxlength="13" required />
+            </div>
+            <div>
+              <label>Stok Kodu (SKU)</label>
+              <input type="text" id="pSku" placeholder="CRZ-KVR-004" required />
+            </div>
+            <div>
+              <label>Ürün Adı</label>
+              <input type="text" id="pName" placeholder="Kavrulmuş Siirt Fıstığı" required />
+            </div>
+            <div>
+              <label>Kategori (FK)</label>
+              <select id="pCat" required></select>
+            </div>
+            <div>
+              <label>Toptancı Firma (FK)</label>
+              <select id="pSup" required></select>
+            </div>
+            <div>
+              <label>Birim</label>
+              <select id="pUnit">
+                <option value="Kg">Kg</option>
+                <option value="Paket">Paket</option>
+                <option value="Kutu">Kutu</option>
+              </select>
+            </div>
+            <div>
+              <label>Toptancıdan Alış Fiyatı (TL)</label>
+              <input type="number" step="0.01" id="pCost" placeholder="450.00" required />
+            </div>
+            <div>
+              <label>Perakende Satış Fiyatı (TL)</label>
+              <input type="number" step="0.01" id="pPrice" placeholder="650.00" required />
+            </div>
+            <div>
+              <label>Başlangıç Stok Miktarı</label>
+              <input type="number" id="pStock" value="15" required />
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">+ Barkodlu Ürünü Veri Tabanına Kaydet</button>
+        </form>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">Mevcut Barkodlu Ürün Envanteri (Products Tablosu)</div>
+        <div class="table-wrap" id="productsTableWrap"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TOPTANCILAR VE VERGİ NO -->
+    <div id="tab-suppliers" class="tab-panel">
+      <div class="panel-card">
+        <div class="panel-title">Yeni Toptancı / Tedarikçi Ekle (INSERT INTO Suppliers)</div>
+        <form onsubmit="handleAddSupplier(event)">
+          <div class="form-grid">
+            <div>
+              <label>Toptancı Firma Ünvanı</label>
+              <input type="text" id="sName" placeholder="Malatya Pazarı Kayısı Gıda A.Ş." required />
+            </div>
+            <div>
+              <label>Vergi Dairesi</label>
+              <input type="text" id="sTaxOffice" placeholder="Fırat V.D." required />
+            </div>
+            <div>
+              <label>10 Haneli Vergi Numarası (Unique)</label>
+              <input type="text" id="sTaxNo" placeholder="6140258963" maxlength="10" required />
+            </div>
+            <div>
+              <label>Yetkili / Plasiyer Adı</label>
+              <input type="text" id="sContact" placeholder="Ali Rıza Bey" />
+            </div>
+            <div>
+              <label>Telefon</label>
+              <input type="text" id="sPhone" placeholder="04223214567" />
+            </div>
+            <div>
+              <label>Şehir</label>
+              <input type="text" id="sCity" placeholder="Malatya" />
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">+ Toptancıyı Veri Tabanına Ekle</button>
+        </form>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">Kayıtlı Toptancılar ve Vergi Bilgileri (Suppliers Tablosu)</div>
+        <div class="table-wrap" id="suppliersTableWrap"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: YENİ SATIŞ FATURASI KES (POS) -->
+    <div id="tab-pos" class="tab-panel">
+      <div class="panel-card">
+        <div class="panel-title">Yeni Satış Faturası Oluştur (Orders &amp; OrderDetails Transaction)</div>
+        <form onsubmit="handleCreateOrder(event)">
+          <div class="form-grid">
+            <div>
+              <label>Müşteri Seçin (CustomerID)</label>
+              <select id="oCustomer" required></select>
+            </div>
+            <div>
+              <label>Barkodlu Ürün Seçin (ProductID)</label>
+              <select id="oProduct" required></select>
+            </div>
+            <div>
+              <label>Satış Miktarı (Adet / Kg)</label>
+              <input type="number" id="oQty" value="1" min="1" required />
+            </div>
+            <div>
+              <label>Ödeme Yöntemi</label>
+              <select id="oPay">
+                <option value="Kredi Kartı">Kredi Kartı</option>
+                <option value="Nakit">Nakit</option>
+                <option value="Havale/EFT">Havale/EFT</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">🧾 Satış Faturasını Kes ve Stoktan Düş</button>
+        </form>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">Son Kesilen Satış Faturaları (Orders Tablosu)</div>
+        <div class="table-wrap" id="ordersTableWrap"></div>
+      </div>
+    </div>
+
+    <!-- TAB 5: ER DİYAGRAMI VE BACKUP -->
+    <div id="tab-schema" class="tab-panel">
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Bölüm 4.2: Veri Tabanı Yedekleme (BACKUP DATABASE)</span>
+          <button class="btn-primary" onclick="triggerBackup()">💾 Şimdi Yedek Al (.bak)</button>
+        </div>
+        <pre class="sql-box">BACKUP DATABASE CerezKapisiDB
+TO DISK = 'C:\Yedek\CerezKapisiDB_FullBackup.bak'
+WITH FORMAT,
+     MEDIANAME = 'CerezKapisiDB_Yedek',
+     NAME = 'CerezKapisiDB Tam Veri Tabanı Yedeği';</pre>
+        <p id="backupStatus" style="color: var(--green); font-size: 13.5px;"></p>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">Bölüm 5: CerezKapisiDB İlişkisel Veri Tabanı Diyagramı (NusretYinanc_CerezKapisi_Proje.png)</div>
+        <img src="/er-diagram.png" alt="ER Diyagramı" style="width: 100%; border-radius: 8px; border: 1px solid #334155;" />
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function showToast(msg, isError = false) {
+      const box = document.getElementById('toastBox');
+      box.style.display = 'block';
+      box.style.background = isError ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)';
+      box.style.border = isError ? '1px solid #ef4444' : '1px solid #10b981';
+      box.style.color = isError ? '#fca5a5' : '#6ee7b7';
+      box.textContent = msg;
+      setTimeout(() => { box.style.display = 'none'; }, 4500);
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function renderDynamicTable(rows, containerId) {
+      const wrap = document.getElementById(containerId);
+      if (!rows || rows.length === 0) {
+        wrap.innerHTML = '<p style="color: var(--muted); padding: 12px;">Kayıt bulunamadı.</p>';
+        return;
+      }
+      const cols = Object.keys(rows[0]);
+      let html = '<table><thead><tr>';
+      cols.forEach(c => { html += `<th>${c}</th>`; });
+      html += '</tr></thead><tbody>';
+      rows.forEach(r => {
+        html += '<tr>';
+        cols.forEach(c => {
+          let val = r[c];
+          if (c.toLowerCase().includes('barkod') || c.toLowerCase().includes('vergi no') || c.toLowerCase().includes('fatura')) {
+            html += `<td class="mono">${val ?? ''}</td>`;
+          } else {
+            html += `<td>${val ?? ''}</td>`;
+          }
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    }
+
+    async function loadStats() {
+      const res = await fetch('/api/stats');
+      const s = await res.json();
+      document.getElementById('kpiRevenue').textContent = Number(s.totalRevenue).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+      document.getElementById('kpiProfit').textContent = Number(s.netProfit).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' TL';
+      document.getElementById('kpiProducts').textContent = s.totalProducts;
+      document.getElementById('kpiCrit').textContent = s.criticalStock;
+      document.getElementById('kpiSuppliers').textContent = s.totalSuppliers;
+      document.getElementById('kpiOrders').textContent = s.totalOrders;
+    }
+
+    async function loadReport(id, btn) {
+      if (btn) {
+        document.querySelectorAll('.rep-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      const res = await fetch('/api/reports/' + id);
+      const data = await res.json();
+      document.getElementById('repTitle').textContent = data.title;
+      document.getElementById('repCount').textContent = data.rowCount + ' Satır Döndü';
+      document.getElementById('repSql').textContent = data.tsql;
+      renderDynamicTable(data.rows, 'repTableWrap');
+    }
+
+    async function loadAllData() {
+      const res = await fetch('/api/data');
+      const data = await res.json();
+
+      // Populate selects
+      document.getElementById('pCat').innerHTML = data.categories.map(c => `<option value="${c.CategoryID}">${c.CategoryName}</option>`).join('');
+      document.getElementById('pSup').innerHTML = data.suppliers.map(s => `<option value="${s.SupplierID}">${s.CompanyName} (VKN: ${s.TaxNumber})</option>`).join('');
+      document.getElementById('oCustomer').innerHTML = data.customers.map(c => `<option value="${c.CustomerID}">${c.FullName} (${c.City})</option>`).join('');
+      document.getElementById('oProduct').innerHTML = data.products.map(p => `<option value="${p.ProductID}">[${p.Barcode}] ${p.ProductName} - ${p.Price} TL (Stok: ${p.Stock})</option>`).join('');
+
+      // Products table
+      const prodRows = data.products.map(p => ({
+        'ID': p.ProductID,
+        'Barkod': p.Barcode,
+        'SKU': p.SKU,
+        'Ürün Adı': p.ProductName,
+        'Kategori': p.CategoryName,
+        'Toptancı (Vergi No)': `${p.SupplierName} (${p.SupplierTaxNo})`,
+        'Alış Maliyeti': p.PurchasePrice.toFixed(2) + ' TL',
+        'Satış Fiyatı': p.Price.toFixed(2) + ' TL',
+        'Stok': `${p.Stock} ${p.UnitType}`
+      }));
+      renderDynamicTable(prodRows, 'productsTableWrap');
+
+      // Suppliers table
+      const supRows = data.suppliers.map(s => ({
+        'ID': s.SupplierID,
+        'Toptancı Firma Ünvanı': s.CompanyName,
+        'Vergi Dairesi': s.TaxOffice,
+        'Vergi No': s.TaxNumber,
+        'Yetkili': s.ContactPerson,
+        'Telefon': s.Phone,
+        'Şehir': s.City
+      }));
+      renderDynamicTable(supRows, 'suppliersTableWrap');
+
+      // Orders table
+      const ordRows = data.orders.map(o => ({
+        'Sipariş ID': o.OrderID,
+        'Fatura No': o.InvoiceNo,
+        'Müşteri Adı': o.CustomerName,
+        'Şehir': o.City,
+        'Sipariş Tarihi': o.OrderDate,
+        'Ödeme Yöntemi': o.PaymentMethod,
+        'Toplam Tutar': o.TotalAmount.toFixed(2) + ' TL'
+      }));
+      renderDynamicTable(ordRows, 'ordersTableWrap');
+    }
+
+    async function handleAddProduct(e) {
+      e.preventDefault();
+      const body = {
+        Barcode: document.getElementById('pBarcode').value,
+        SKU: document.getElementById('pSku').value,
+        ProductName: document.getElementById('pName').value,
+        CategoryID: document.getElementById('pCat').value,
+        SupplierID: document.getElementById('pSup').value,
+        UnitType: document.getElementById('pUnit').value,
+        PurchasePrice: document.getElementById('pCost').value,
+        Price: document.getElementById('pPrice').value,
+        Stock: document.getElementById('pStock').value
+      };
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const out = await res.json();
+      if (!res.ok) return showToast(out.error, true);
+      showToast(out.message);
+      e.target.reset();
+      await loadStats();
+      await loadAllData();
+      await loadReport('1');
+    }
+
+    async function handleAddSupplier(e) {
+      e.preventDefault();
+      const body = {
+        CompanyName: document.getElementById('sName').value,
+        TaxOffice: document.getElementById('sTaxOffice').value,
+        TaxNumber: document.getElementById('sTaxNo').value,
+        ContactPerson: document.getElementById('sContact').value,
+        Phone: document.getElementById('sPhone').value,
+        City: document.getElementById('sCity').value
+      };
+      const res = await fetch('/api/suppliers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const out = await res.json();
+      if (!res.ok) return showToast(out.error, true);
+      showToast(out.message);
+      e.target.reset();
+      await loadStats();
+      await loadAllData();
+    }
+
+    async function handleCreateOrder(e) {
+      e.preventDefault();
+      const body = {
+        CustomerID: document.getElementById('oCustomer').value,
+        PaymentMethod: document.getElementById('oPay').value,
+        items: [{
+          ProductID: document.getElementById('oProduct').value,
+          Quantity: document.getElementById('oQty').value
+        }]
+      };
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const out = await res.json();
+      if (!res.ok) return showToast(out.error, true);
+      showToast(out.message);
+      await loadStats();
+      await loadAllData();
+      await loadReport('2');
+    }
+
+    async function triggerBackup() {
+      const res = await fetch('/api/backup', { method: 'POST' });
+      const out = await res.json();
+      if (!res.ok) return showToast(out.error, true);
+      document.getElementById('backupStatus').textContent = `✔ ${out.message} Dosya Yolu: ${out.backupPath}`;
+      showToast(out.message);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStats();
+      loadReport('1');
+      loadAllData();
+    });
+  </script>
+</body>
+</html>
